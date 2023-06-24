@@ -11,7 +11,7 @@
                 "logs:PutLogEvents"
             ],
             "Resource": [
-                "arn:aws-cn:logs:cn-northwest-1:523497193792:log-group:/aws/lambda/apiauth-demo0:*"
+                "arn:aws-cn:logs:cn-northwest-1:523497193792:log-group:/aws/lambda/apiauth-authorizer:*"
             ]
         }
     ]
@@ -20,7 +20,7 @@
 
 ## Create Lambda function.
 ```
-aws lambda create-function --function-name apiauth-demo0 \
+aws lambda create-function --function-name apiauth-authorizer \
   --zip-file fileb://deployment.zip \
   --runtime go1.x --handler main \
   --role arn:aws-cn:iam::523497193792:role/qa-is-apiauth-0 \
@@ -30,7 +30,7 @@ aws lambda create-function --function-name apiauth-demo0 \
 
 ## Update Lambda function.
 ```
-aws lambda update-function-code --function-name apiauth-demo0 \
+aws lambda update-function-code --function-name apiauth-authorizer \
   --zip-file fileb://deployment.zip \
   --region cn-northwest-1 \
   --profile default

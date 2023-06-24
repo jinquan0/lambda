@@ -46,14 +46,15 @@ func generatePolicy(principalId, effect, resource string) events.APIGatewayCusto
 func handleRequest(ctx context.Context, event events.APIGatewayCustomAuthorizerRequest) (events.APIGatewayCustomAuthorizerResponse, error) {
 	token := event.AuthorizationToken
 	switch strings.ToLower(token) {
-	case "allow":
+	case "79faf82271944fe38c4f1d99be71bc9c":
 		return generatePolicy("user", "Allow", event.MethodArn), nil
-	case "deny":
-		return generatePolicy("user", "Deny", event.MethodArn), nil
+	//case "deny":
+	//	return generatePolicy("user", "Deny", event.MethodArn), nil
 	case "unauthorized":
 		return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Unauthorized") // Return a 401 Unauthorized response
 	default:
-		return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Error: Invalid token")
+		//return events.APIGatewayCustomAuthorizerResponse{}, errors.New("Error: Invalid token")
+                return generatePolicy("user", "Deny", event.MethodArn), nil
 	}
 }
 
