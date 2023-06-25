@@ -5,29 +5,65 @@ import (
     "log"
     "net/http"
     "github.com/gin-gonic/gin"
+    "mime/multipart"
 )
 
-//type MyReqPara struct {
-//    Filename  string `json:filename"`
-//}
-
 /*
-参考链接: https://blog.csdn.net/weixin_46618592/article/details/125570527
+type SomeStruct struct {
+    Token  string `json:token"`
+}
 
-curl -XPOST -F "file=@/tmp/test.txt" \
-  -H "Content-Type: multipart/form-data" \
-  http://127.0.0.1:8080/api/upload
-*/
-func gin_handler_api_upload(c *gin.Context) {
-    //FormFile返回所提供的表单键的第一个文件
-    f, err := c.FormFile("file")
-    if err != nil {
-        c.String(http.StatusOK, "Gin FormFile Failed.\n")
+type SomeRequest struct {
+  File        *multipart.FileHeader `form:"file"`
+  StructField SomeStruct            `form:"structField"`
+}
+
+// 参考链接: 
+// https://blog.csdn.net/weixin_46618592/article/details/125570527
+// https://www.appsloveworld.com/go/19/how-to-upload-multipart-file-and-json-in-go-with-gin-gonic
+
+// curl -XPOST -F "file=@/tmp/test.txt" \
+//   -F 'structField={ "token": "1234567890" }' \
+//   -H "Content-Type: multipart/form-data" \
+//   http://127.0.0.1:8080/api/upload
+
+func gin_handler_api_upload(c *gin.Context)  {
+    var req SomeRequest
+    if err := c.ShouldBind(&req); err != nil {
+        c.String(http.StatusOK, "Gin ShouldBind Failed.\n")
     } else {
-        //SaveUploadedFile上传表单文件到指定的路径
-        c.SaveUploadedFile(f, "./"+f.Filename)
+        log.Printf("token: %s", req.StructField.Token)
+        c.SaveUploadedFile(req.File, "./"+req.File.Filename)
+        //log.Println(req)
         c.JSON(200, gin.H{
-            "msg": f,
+            "msg": req.File,
+        })
+    }
+}
+*/
+
+type SomeRequest struct {
+  Token  string `form:"token"`
+  File   *multipart.FileHeader `form:"file"`
+}
+
+// 参考链接: 
+// https://blog.csdn.net/weixin_46618592/article/details/125570527
+// https://www.appsloveworld.com/go/19/how-to-upload-multipart-file-and-json-in-go-with-gin-gonic
+
+// curl -XPOST -F 'token=1234567890' -F 'file=@/tmp/test.txt' -H 'Content-Type: multipart/form-data' http://127.0.0.1:8080/api/upload
+// 或者
+// curl -XPOST -F 'token="1234567890"' -F 'file=@/tmp/test.txt' -H 'Content-Type: multipart/form-data' http://127.0.0.1:8080/api/upload
+
+func gin_handler_api_upload(c *gin.Context)  {
+    var req SomeRequest
+    if err := c.ShouldBind(&req); err != nil {
+        c.String(http.StatusOK, "Gin ShouldBind Failed.\n")
+    } else {
+        log.Printf("token: %s", req.Token)
+        c.SaveUploadedFile(req.File, "./"+req.File.Filename)
+        c.JSON(200, gin.H{
+            "msg": req.File,
         })
     }
 }

@@ -66,7 +66,14 @@ curl -XPOST -F "file=@/tmp/test.txt" \
   -H "Content-Type: multipart/form-data" \
   https://otbxr6m1fg.execute-api.cn-northwest-1.amazonaws.com.cn/v1/api/upload
 
-
 curl -XGET -H "Content-Type: application/json" \
 -d '{"bucket": "qa-is-bucket"}' \
   https://otbxr6m1fg.execute-api.cn-northwest-1.amazonaws.com.cn/v1/api/listitems
+
+
+
+curl -XPOST -F 'token="79faf82271944fe38c4f1d99be71bc9c"' \
+  -F 'file=@/tmp/test.txt' \
+  -F 'auth={"token": "79faf82271944fe38c4f1d99be71bc9c"}' \
+  -H 'Content-Type: multipart/form-data' \
+  https://otbxr6m1fg.execute-api.cn-northwest-1.amazonaws.com.cn/v1/api/upload

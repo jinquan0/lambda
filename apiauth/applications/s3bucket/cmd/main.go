@@ -10,6 +10,7 @@ import (
     "log"
     "context"
     "net/http"
+    "mime/multipart"
     "github.com/aws/aws-lambda-go/events"
     "github.com/aws/aws-lambda-go/lambda"
     "github.com/awslabs/aws-lambda-go-api-proxy/gin"
@@ -142,11 +143,8 @@ func gin_handler_api_listitems(c *gin.Context) {
     c.String(http.StatusOK, reply+"\n")
 }
 
-/*
-curl -XPOST -F "file=@/tmp/test.txt" \
-  -H "Content-Type: multipart/form-data" \
-  https://otbxr6m1fg.execute-api.cn-northwest-1.amazonaws.com.cn/v1/api/upload
-*/
+
+// curl -XPOST -F "file=@/tmp/test.txt" -H "Content-Type: multipart/form-data" https://otbxr6m1fg.execute-api.cn-northwest-1.amazonaws.com.cn/v1/api/upload
 func gin_handler_api_upload(c *gin.Context) {
     // var para MyReqPara
     //FormFile返回所提供的表单键的第一个文件
@@ -154,15 +152,9 @@ func gin_handler_api_upload(c *gin.Context) {
     if err != nil {
         c.String(http.StatusOK, "Gin FormFile Failed.\n")
     } else {
-        // SaveUploadedFile上传表单文件到指定的路径
+        // 暂存于lambda所在计算实例的 /tmp, 该路径的存储空间可自由读写 
         c.SaveUploadedFile(f, "/tmp/"+f.Filename)
-
-        // if err := c.BindJSON(&para); err != nil {
-        //     log.Printf("Gin BindJSON failed.")
-        // } else {
-        //     log.Printf("API upload, request parameters ->\n\tbucket: %s", para.Bucket)
-        // }
-        // 转存于S3 bucket
+        // 转存于S3 bucket, 注意使用lambda所在计算实例 的绝对路径, 不然无法找到文件
         sess := sessionInit_v2("cn-northwest-1")
         s3bucketUploadFile(sess, "qa-is-bucket", "/tmp/"+f.Filename)
         c.JSON(200, gin.H{
@@ -170,6 +162,34 @@ func gin_handler_api_upload(c *gin.Context) {
         })
     }
 }
+
+/*
+type SomeStruct struct {
+    Token  string `json:token"`
+}
+type SomeRequest struct {
+  Token  string `form:"token"`
+  File   *multipart.FileHeader `form:"file"`
+  Auth SomeStruct            `form:"auth"`
+}
+func gin_handler_api_upload(c *gin.Context)  {
+    var req SomeRequest
+    if err := c.ShouldBind(&req); err != nil {
+        c.String(http.StatusOK, "Gin ShouldBind Failed.\n")
+    } else {
+        log.Printf("token: %s", req.Token)
+        // 暂存于lambda所在计算实例的 /tmp, 该路径的存储空间可自由读写 
+        c.SaveUploadedFile(req.File, "/tmp/"+req.File.Filename)
+        // 转存于S3 bucket, 注意使用lambda所在计算实例 的绝对路径, 不然无法找到文件
+        sess := sessionInit_v2("cn-northwest-1")
+        s3bucketUploadFile(sess, "qa-is-bucket", "/tmp/"+req.File.Filename)
+        c.JSON(200, gin.H{
+            "msg": req.File,
+        })
+    }
+}
+*/
+
 
 func gin_handler_healthy(c *gin.Context) {
     /*
